@@ -1,0 +1,848 @@
+/* AWS Architecture Patterns スタイル */
+:root {
+  --rust-orange: #ec7211;
+  --rust-orange-dark: #b35309;
+  --bg: #ffffff;
+  --bg-side: #f6f4f2;
+  --text: #2b2b2b;
+  --text-sub: #6b6b6b;
+  --border: #e2ddd8;
+  --code-bg: #f4f1ee;
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --err: #c0392b;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Noto Sans JP", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+/* ---- サイドバー ---- */
+#sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--bg-side);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+#sidebar-header h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  /* 明るいオレンジは薄い背景とのコントラスト不足（2.74:1）のため暗い方を使う */
+  color: var(--rust-orange-dark);
+}
+
+#progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e6e0da;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--rust-orange);
+  transition: width 0.3s;
+}
+
+#progress-label {
+  font-size: 12px;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+/* ケース検索欄 */
+#toc-search-wrap {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+#toc-search {
+  width: 100%;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#toc-search::placeholder { color: var(--text-sub); }
+
+/* フォーカスリングは消さず、サイト配色に合わせて明示する */
+#toc-search:focus {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: 1px;
+  border-color: var(--rust-orange-dark);
+}
+
+.toc-empty {
+  padding: 10px 16px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-sub);
+}
+
+#toc {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.toc-chapter summary {
+  cursor: pointer;
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+
+.toc-chapter summary:hover { background: #eee8e2; }
+.toc-chapter summary.done { color: var(--ok); }
+
+.toc-chapter ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.toc-step {
+  display: block;
+  padding: 4px 16px 4px 32px;
+  font-size: 12.5px;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toc-step:hover { background: #eee8e2; }
+.toc-step.done { color: var(--ok); }
+.toc-step.done::before { content: "✓ "; }
+.toc-step.active {
+  /* 白文字とのコントラスト確保（WCAG AA）のため暗いオレンジにする */
+  background: var(--rust-orange-dark);
+  color: #fff;
+}
+
+#sidebar-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+/* ---- メイン ---- */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 40px 80px;
+}
+
+#step-view { max-width: 860px; margin: 0 auto; }
+
+#step-breadcrumb {
+  color: var(--text-sub);
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+#step-title {
+  margin: 0 0 20px;
+  font-size: 26px;
+  border-bottom: 3px solid var(--rust-orange);
+  padding-bottom: 8px;
+}
+
+/* 解説エリア */
+#explanation h4 {
+  margin: 20px 0 8px;
+  font-size: 16px;
+  color: var(--rust-orange-dark);
+}
+
+#explanation p { margin: 10px 0; }
+
+#explanation code, #task-box code {
+  background: var(--code-bg);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+#explanation pre {
+  background: #2b2b2b;
+  color: #eee;
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+#explanation pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+#explanation table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+#explanation th, #explanation td {
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+#explanation th { background: var(--bg-side); }
+
+/* 課題ボックス */
+#task-box {
+  background: #fff7f2;
+  border: 1px solid #f0c9b5;
+  border-left: 5px solid var(--rust-orange);
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin: 24px 0;
+}
+
+#task-box h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--rust-orange-dark);
+}
+
+#task-box p { margin: 0; }
+
+/* エディタ */
+#editor-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  color: var(--text);
+}
+
+button:hover { background: var(--bg-side); }
+
+button.primary {
+  /* 白文字とのコントラスト確保（WCAG AA）のため暗いオレンジにする */
+  background: var(--rust-orange-dark);
+  border-color: var(--rust-orange-dark);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover { background: #8f4207; border-color: #8f4207; }
+button:disabled { opacity: 0.6; cursor: wait; }
+
+#editor-host .CodeMirror {
+  height: auto;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.6;
+  padding: 6px 0;
+}
+
+/* 高さの下限は内側のスクロール領域に指定する（本体に指定すると空箱が見える） */
+#editor-host .CodeMirror-scroll {
+  min-height: 200px;
+}
+
+#code-editor {
+  width: 100%;
+  min-height: 260px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: #212121;
+  color: #eee;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  resize: vertical;
+}
+
+/* ヒント・模範解答 */
+#hints-box {
+  background: #fffbe6;
+  border: 1px solid #e6d98a;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+#hints-box p { margin: 6px 0; }
+
+#solution-box {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: var(--bg-side);
+}
+
+#solution-box h4 { margin: 0 0 8px; }
+
+#solution-box pre {
+  background: #2b2b2b;
+  color: #eee;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.6;
+}
+
+/* 出力 */
+#output-section {
+  margin-top: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+
+#output-section h3 {
+  font-size: 13px;
+  margin: 12px 0 6px;
+  color: var(--text-sub);
+}
+
+#output-section pre {
+  background: #1e1e1e;
+  color: #ddd;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+#compiler-output { color: #f0b27a; }
+
+#output-status {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.status-ok { color: var(--ok); }
+.status-warn { color: var(--warn); }
+.status-err { color: var(--err); }
+.status-running { color: var(--text-sub); }
+
+/* ステップ移動 */
+#step-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  gap: 12px;
+}
+
+#done-toggle {
+  font-size: 14px;
+  color: var(--text-sub);
+  user-select: none;
+  cursor: pointer;
+}
+
+.placeholder {
+  max-width: 860px;
+  margin: 60px auto;
+  color: var(--text-sub);
+}
+
+/* 狭い画面 */
+@media (max-width: 800px) {
+  #app { flex-direction: column; height: auto; }
+  #sidebar {
+    width: 100%;
+    max-height: 40vh;
+  }
+  #main { padding: 20px 16px 60px; }
+}
+
+/* 「はじめに」（言語紹介）ページ */
+.toc-intro {
+  display: block;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--rust-orange-dark);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.toc-intro:hover { background: #eee8e2; }
+.toc-intro.active {
+  /* 白文字とのコントラスト確保（WCAG AA）のため暗いオレンジにする */
+  background: var(--rust-orange-dark);
+  color: #fff;
+}
+
+/* 付録リンク（参考資料リスト・用語集）。ケース一覧の末尾にまとめて置く */
+.toc-appendix { border-bottom: none; }
+.toc-appendix-first {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.resources-checked { color: var(--text-sub); font-size: 12.5px; }
+
+.intro-page {
+  max-width: 860px;
+  margin: 0 auto;
+  color: var(--text);
+  line-height: 1.85;
+}
+
+.intro-page h2 {
+  font-size: 26px;
+  border-bottom: 3px solid var(--rust-orange);
+  padding-bottom: 8px;
+  margin-top: 0;
+}
+
+.intro-page h3 {
+  color: var(--rust-orange-dark);
+  margin: 30px 0 10px;
+  font-size: 19px;
+}
+
+.intro-page p { margin: 10px 0; }
+
+.intro-page table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.intro-page th, .intro-page td {
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.intro-page th { background: var(--bg-side); }
+
+.intro-page code {
+  background: var(--code-bg);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.intro-page ul, .intro-page ol { padding-left: 24px; }
+.intro-page li { margin: 6px 0; }
+
+.intro-page .intro-note {
+  background: var(--bg-side);
+  border-left: 5px solid var(--rust-orange);
+  border-radius: 6px;
+  padding: 12px 18px;
+  margin: 16px 0;
+}
+
+.intro-page button {
+  margin-top: 24px;
+  font-size: 16px;
+  padding: 12px 28px;
+}
+
+/* ---- AWS Architecture Patterns 専用 ---- */
+#case-view { max-width: 980px; margin: 0 auto; line-height: 1.85; }
+#case-breadcrumb { color: var(--text-sub); font-size: 13px; margin: 0 0 4px; }
+#case-view h2 {
+  margin: 0 0 20px; font-size: 26px;
+  border-bottom: 3px solid var(--rust-orange); padding-bottom: 8px;
+}
+#case-view h3 { color: var(--rust-orange-dark); margin: 26px 0 10px; font-size: 19px; }
+#case-view h4 { margin: 18px 0 8px; font-size: 15px; }
+#case-view section { margin-bottom: 8px; }
+
+.scenario { background: var(--bg-side); border-radius: 8px; padding: 12px 18px; }
+.pattern { border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+.pattern-main { border-color: var(--rust-orange); border-width: 2px; }
+.pattern h3 { margin-top: 0; }
+.pattern-when {
+  background: #fff7f0; border-left: 4px solid var(--rust-orange);
+  padding: 8px 12px; border-radius: 4px; font-size: 14px;
+}
+
+.diagram-wrap { overflow-x: auto; margin: 14px 0; }
+.dg { min-width: 640px; width: 100%; height: auto; }
+.dg-label { font-size: 12px; fill: #16191f; }
+.dg-group-label { font-size: 12px; font-weight: 600; }
+.dg-edge-label { font-size: 11px; fill: #545b64; }
+/* ラベルに白フチを付け、線や枠と交差しても読めるようにする */
+.dg-label, .dg-group-label, .dg-edge-label {
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.pattern-cost {
+  background: var(--bg-side); border-radius: 6px;
+  padding: 8px 14px; font-size: 14px; margin: 6px 0;
+}
+
+/* 公式ドキュメント・参考資料 */
+.ref-list { margin: 0; padding-left: 20px; font-size: 14px; }
+.ref-list li { margin: 5px 0; }
+.ref-list a { color: var(--rust-orange-dark); }
+.ref-list a:hover { color: var(--rust-orange); }
+.ref-list .ref-note { color: var(--text-sub); font-size: 13px; }
+
+.svc-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.svc-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+}
+.svc-item img, .svc-item svg { flex-shrink: 0; }
+.svc-name { font-weight: 600; font-size: 14px; }
+.svc-role { font-size: 13px; color: var(--text-sub); }
+
+.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pros-cons h4 { margin-top: 0; }
+.pros { background: #f2f8ec; border-radius: 8px; padding: 10px 16px; }
+.cons { background: #fdf1f1; border-radius: 8px; padding: 10px 16px; }
+.pros-cons ul { margin: 0; padding-left: 20px; font-size: 14px; }
+.pros-cons li { margin: 5px 0; }
+@media (max-width: 700px) { .pros-cons { grid-template-columns: 1fr; } }
+
+.cost, .case-summary { background: var(--bg-side); border-radius: 8px; padding: 12px 18px; }
+#case-nav { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 10px; gap: 12px; }
+
+/* ---- 理解度チェック（確認問題） ---- */
+.quiz {
+  background: #fff7f0;
+  border: 1px solid #f0c9b5;
+  border-radius: 10px;
+  padding: 4px 20px 16px;
+  margin: 24px 0 6px;
+}
+
+.quiz-lead { font-size: 14px; color: var(--text); margin: 0 0 12px; }
+
+.quiz-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.quiz-item > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.7;
+  list-style-position: outside;
+}
+
+.quiz-item > summary:hover { background: var(--bg-side); border-radius: 8px; }
+.quiz-item[open] > summary { border-radius: 8px 8px 0 0; }
+
+/* キーボード操作でも開閉位置が分かるようフォーカスリングを明示する */
+.quiz-item > summary:focus-visible {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+.quiz-no {
+  display: inline-block;
+  background: var(--rust-orange-dark);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 1px 8px;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.quiz-a {
+  border-top: 1px dashed var(--border);
+  padding: 10px 14px 12px;
+  font-size: 14px;
+}
+
+.quiz-a-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rust-orange-dark);
+  margin-bottom: 4px;
+}
+
+.quiz-a p { margin: 6px 0; }
+.quiz-a ul, .quiz-a ol { margin: 6px 0; padding-left: 22px; }
+
+/* ---- 構成図の拡大 ---- */
+/* バッジは図に重ねず上に置く。図のラベルと重なって読めなくなるのを避けるため */
+.diagram-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 14px 0;
+}
+
+.diagram-box .diagram-wrap {
+  width: 100%;
+  margin: 0;
+  cursor: zoom-in;
+  border-radius: 8px;
+}
+
+.diagram-box .diagram-wrap:hover { background: #fffaf5; outline: 1px solid #f0c9b5; }
+.diagram-box .diagram-wrap:focus-visible {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: 2px;
+}
+
+.diagram-zoom-hint {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--rust-orange-dark);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 1px 10px;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+#diagram-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#diagram-modal[hidden] { display: none; }
+body.modal-open { overflow: hidden; }
+
+.modal-panel {
+  background: #fff;
+  border-radius: 12px;
+  width: min(1600px, 96vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--rust-orange-dark);
+}
+
+.modal-close:focus-visible, .mini-btn:focus-visible {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: 2px;
+}
+
+/* 縦に長い図はモーダル内でスクロールする */
+.modal-body { overflow: auto; padding: 12px 16px 20px; }
+.modal-body:focus-visible { outline: 2px solid var(--rust-orange-dark); outline-offset: -2px; }
+.modal-body .dg-zoom { width: 100%; min-width: 900px; height: auto; }
+
+/* ---- 進捗の持ち出し・読み込み ---- */
+#progress-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+.mini-btn {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  line-height: 1.6;
+}
+
+.mini-btn.primary {
+  font-size: 11.5px;
+  padding: 3px 9px;
+}
+
+#progress-panel {
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+#progress-panel[hidden] { display: none; }
+
+#progress-panel label {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+#progress-panel textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 7px;
+  resize: vertical;
+}
+
+#progress-panel textarea:focus {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: 1px;
+}
+
+.panel-actions { display: flex; gap: 6px; margin-top: 6px; }
+.panel-note { margin: 6px 0 0; font-size: 11px; color: var(--text-sub); }
+
+#progress-msg {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  color: var(--text);
+  background: #fff7f0;
+  border-left: 3px solid var(--rust-orange-dark);
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+
+#progress-msg[hidden] { display: none; }
+
+/* ---- 用語集 ---- */
+.glossary-lead { font-size: 14.5px; }
+
+.glossary-search-wrap {
+  background: var(--bg-side);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0 24px;
+}
+
+.glossary-search-wrap label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+#glossary-search {
+  width: 100%;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#glossary-search::placeholder { color: var(--text-sub); }
+
+#glossary-search:focus {
+  outline: 2px solid var(--rust-orange-dark);
+  outline-offset: 1px;
+  border-color: var(--rust-orange-dark);
+}
+
+#glossary-count { margin: 6px 0 0; font-size: 12.5px; color: var(--text); }
+
+.glossary-group[hidden] { display: none; }
+.glossary-group h3 { scroll-margin-top: 12px; }
+
+.glossary-term {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--rust-orange);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin: 10px 0;
+}
+
+.glossary-term[hidden] { display: none; }
+
+.gt-name { margin: 0 0 4px; font-size: 15.5px; }
+.gt-full { font-size: 12.5px; font-weight: 400; color: var(--text-sub); }
+.gt-desc { font-size: 14px; }
+.gt-desc p { margin: 4px 0; }
+
+.gt-cases { margin: 6px 0 0; font-size: 13px; color: var(--text); }
+.gt-cases a { color: var(--rust-orange-dark); }
+.gt-cases a:hover { color: var(--rust-orange); }
